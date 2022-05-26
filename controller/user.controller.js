@@ -4,11 +4,12 @@ const bcrypt = require('bcrypt')
 
 var User = require("../models/user.model");
 var auth = require("../middleware/auth");
+const { token } = require('morgan');
 
 exports.register = async (req, res) => {
     try {
         const { name, email, password } = req.body;
-        var instance = new User(req.body);
+        // var instance = new User(req.body);
     
         if (!(name && email && password)) {
           res.status(400).send("All inputs are required!!");
@@ -22,7 +23,7 @@ exports.register = async (req, res) => {
         encryptedPassword = await bcrypt.hash(password, 10);
 
 
-        const user = await instance.save({
+        const user = await User.create({
             name,
             email,
             password: encryptedPassword,
@@ -33,9 +34,8 @@ exports.register = async (req, res) => {
         }, process.env.TOKEN_KEY)
 
         user.token = token
-        var tokenSave = await instance.save({token})
-
-        console.log(user, tokenSave);
+        
+        console.log(user);
         res.status(201).json(user);
       } catch (err) {
         console.log(err);
@@ -57,7 +57,7 @@ exports.login = async (req, res) => {
                 { user_id: user._id}, process.env.TOKEN_KEY
             )
             user.token = token
-            
+        
          }
          res.status(201).json(user)
          
